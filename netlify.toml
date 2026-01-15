@@ -1,6 +1,11 @@
 [build]
-  base = "web"
   command = "npm run build"
+  publish = "web/.next"
+  base = "web"
+
+[build.environment]
+  NEXT_PUBLIC_SUPABASE_URL = "SUA_URL_AQUI"
+  NEXT_PUBLIC_SUPABASE_ANON_KEY = "SUA_CHAVE_AQUI"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
