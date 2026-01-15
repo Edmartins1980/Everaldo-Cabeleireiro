@@ -1,50 +1,81 @@
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+'use client'
+
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import DashboardContent from "@/components/admin/DashboardContent";
 
-export default async function AdminPage({ searchParams }: { searchParams?: { tab?: string } }) {
-    const supabase = await createClient();
-    const params = await searchParams;
-    const activeTab = params?.tab || "agendamentos";
+export default function AdminPage() {
+    const [loading, setLoading] = useState(true);
+    const [data, setData] = useState<any>({
+        appointments: [],
+        services: [],
+        products: [],
+        gallery: [],
+        settings: {}
+    });
+    
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const activeTab = searchParams.get("tab") || "agendamentos";
+    const supabase = createClient();
 
-    // Segurança
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user || user.email !== "everaldocabeleireiro3@gmail.com") return redirect("/");
+    useEffect(() => {
+        async function loadAdminData() {
+            // 1. Verificação de Segurança (Client Side)
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (!user || user.email !== "everaldocabeleireiro3@gmail.com") {
+                router.push("/");
+                return;
+            }
 
-    // Dados
-    const { data: appointments } = await supabase
-        .from("appointments")
-        .select(`id, start_time, profiles(name, phone), services(name, price)`)
-        .order("start_time", { ascending: true });
+            // 2. Busca de Dados
+            const [
+                { data: appointments },
+                { data: services },
+                { data: products },
+                { data: galleryData },
+                { data: settingsData }
+            ] = await Promise.all([
+                supabase.from("appointments").select(`id, start_time, profiles(name, phone), services(name, price)`).order("start_time", { ascending: true }),
+                supabase.from("services").select("*").order("name"),
+                supabase.from("products").select("*").order("name"),
+                supabase.from("gallery").select("*").order("created_at", { ascending: false }),
+                supabase.from("settings").select("*")
+            ]);
 
-    const { data: services } = await supabase.from("services").select("*").order("name");
-    const { data: products } = await supabase.from("products").select("*").order("name");
-    let gallery = [];
-    try {
-        const { data: galleryData } = await supabase.from("gallery").select("*").order("created_at", { ascending: false });
-        gallery = galleryData || [];
-    } catch (e) {
-        console.error("Gallery table missing or error fetching:", e);
-    }
-    let settings = {};
-    try {
-        const { data: settingsData } = await supabase.from("settings").select("*");
-        settings = settingsData?.reduce((acc: any, curr: any) => {
-            acc[curr.key] = curr.value;
-            return acc;
-        }, {}) || {};
-    } catch (e) {
-        console.error("Settings table missing or error fetching:", e);
+            const formattedSettings = settingsData?.reduce((acc: any, curr: any) => {
+                acc[curr.key] = curr.value;
+                return acc;
+            }, {}) || {};
+
+            setData({
+                appointments: appointments || [],
+                services: services || [],
+                products: products || [],
+                gallery: galleryData || [],
+                settings: formattedSettings
+            });
+            
+            setLoading(false);
+        }
+
+        loadAdminData();
+    }, [router, supabase]);
+
+    if (loading) {
+        return <div className="flex h-screen items-center justify-center">Carregando Painel...</div>;
     }
 
     return (
         <DashboardContent
             initialActiveTab={activeTab}
-            appointments={appointments}
-            services={services}
-            products={products}
-            gallery={gallery}
-            settings={settings}
+            appointments={data.appointments}
+            services={data.services}
+            products={data.products}
+            gallery={data.gallery}
+            settings={data.settings}
         />
     );
 }
