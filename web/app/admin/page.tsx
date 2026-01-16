@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import DashboardContent from "@/components/admin/DashboardContent";
 
-export default function AdminPage() {
+// Criamos um componente interno para lidar com a lógica que usa searchParams
+function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<any>({
         appointments: [],
@@ -22,7 +23,6 @@ export default function AdminPage() {
 
     useEffect(() => {
         async function loadAdminData() {
-            // 1. Verificação de Segurança (Client Side)
             const { data: { user } } = await supabase.auth.getUser();
             
             if (!user || user.email !== "everaldocabeleireiro3@gmail.com") {
@@ -30,7 +30,6 @@ export default function AdminPage() {
                 return;
             }
 
-            // 2. Busca de Dados
             const [
                 { data: appointments },
                 { data: services },
@@ -77,5 +76,14 @@ export default function AdminPage() {
             gallery={data.gallery}
             settings={data.settings}
         />
+    );
+}
+
+// O componente principal exporta o dashboard dentro de um Suspense
+export default function AdminPage() {
+    return (
+        <Suspense fallback={<div className="flex h-screen items-center justify-center">Carregando...</div>}>
+            <AdminDashboard />
+        </Suspense>
     );
 }
