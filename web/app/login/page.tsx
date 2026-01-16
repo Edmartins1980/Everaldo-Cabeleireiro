@@ -12,14 +12,6 @@ export default function LoginPage() {
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false)
     const [errorMsg, setErrorMsg] = useState("")
-    const [debugInfo, setDebugInfo] = useState({
-        url: process.env.NEXT_PUBLIC_SUPABASE_URL ? "OK" : "MISSING",
-        key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-            ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.substring(0, 5) + "..."
-            : process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
-                ? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY.substring(0, 5) + "..."
-                : "MISSING"
-    })
     const router = useRouter()
     const supabase = createClient()
 
