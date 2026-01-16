@@ -38,31 +38,31 @@ export default function Home() {
       </div>
 
       {/* CABEÇALHO */}
-      <header className="relative z-40 w-full p-4 md:p-6 flex justify-between items-center bg-black/20 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none gap-2">
-        <h2 className="text-orange-500 font-black italic text-lg md:text-xl uppercase tracking-wider flex-shrink-0">HOME</h2>
-        <div className="flex items-center gap-2 md:gap-4 justify-end">
+      <header className="relative z-40 w-full p-3 md:p-6 flex justify-between items-center bg-black/40 md:bg-transparent backdrop-blur-md md:backdrop-blur-none gap-2">
+        <h2 className="text-orange-500 font-black italic text-base md:text-xl uppercase tracking-wider flex-shrink-0">HOME</h2>
+        <div className="flex items-center gap-1 md:gap-4 justify-end overflow-hidden">
           {user ? (
             <>
-              <span className="text-white text-xs md:text-sm font-medium whitespace-nowrap">
+              <span className="text-white text-[11px] md:text-sm font-medium truncate max-w-[120px] md:max-w-none">
                 Olá, <span className="text-orange-500 font-bold">{user.user_metadata?.full_name || user.email?.split("@")[0]}</span>
               </span>
-              <div className="flex items-center gap-2 md:gap-4">
+              <div className="flex items-center gap-1 md:gap-4 flex-shrink-0">
                 <Link href="/appointments">
-                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 w-9 h-9 md:w-10 md:h-10">
+                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 w-8 h-8 md:w-10 md:h-10">
                     <Calendar className="w-4 h-4 md:w-5 md:h-5" />
                   </Button>
                 </Link>
                 <Button
                   onClick={handleLogout}
-                  className="bg-red-600 hover:bg-red-700 text-white font-bold px-3 md:px-6 py-1.5 md:py-2 h-auto rounded-md flex gap-2 uppercase text-[10px] md:text-xs"
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold px-2 md:px-6 py-1 md:py-2 h-7 md:h-10 rounded-md flex gap-1 md:gap-2 uppercase text-[10px] md:text-xs"
                 >
-                  <span className="hidden sm:inline">Sair</span> <LogOut className="w-4 h-4" />
+                  <span className="hidden sm:inline">Sair</span> <LogOut className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 </Button>
               </div>
             </>
           ) : (
             <Link href="/login">
-              <Button className="bg-orange-500 hover:bg-orange-600 text-black font-bold px-4 md:px-6 rounded-md uppercase text-[10px] md:text-xs">
+              <Button className="bg-orange-500 hover:bg-orange-600 text-black font-bold px-4 md:px-6 h-8 md:h-10 rounded-md uppercase text-[10px] md:text-xs">
                 Entrar
               </Button>
             </Link>
