@@ -12,8 +12,8 @@ export async function getBusySlots(dateStart: string, dateEnd: string) {
 
     // For now, let's assume we are just running this query server-side.
     // If the RLS is fixed (public select), this works with a normal client too.
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim()
+    const supabaseKey = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "").trim()
 
     const supabase = createClient(supabaseUrl, supabaseKey)
 
