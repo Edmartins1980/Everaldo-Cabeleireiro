@@ -38,9 +38,8 @@ export default function Home() {
       </div>
 
       {/* CABEÇALHO */}
-      <header className="relative z-40 w-full p-3 md:p-6 flex justify-between items-center bg-black/40 md:bg-transparent backdrop-blur-md md:backdrop-blur-none gap-2">
-        <h2 className="text-orange-500 font-black italic text-base md:text-xl uppercase tracking-wider flex-shrink-0">HOME</h2>
-        <div className="flex items-center gap-1 md:gap-4 justify-end overflow-hidden">
+      <header className="relative z-40 w-full p-3 md:p-6 flex justify-end items-center bg-black/40 md:bg-transparent backdrop-blur-md md:backdrop-blur-none gap-2">
+        <div className="flex items-center gap-1 md:gap-4 justify-end flex-1 overflow-hidden">
           {user ? (
             <>
               <span className="text-white text-[11px] md:text-sm font-medium truncate max-w-[120px] md:max-w-none">

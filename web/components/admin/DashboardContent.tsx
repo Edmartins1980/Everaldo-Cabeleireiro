@@ -106,7 +106,7 @@ export default function DashboardContent({ initialActiveTab, appointments, servi
                     ))}
                 </nav>
 
-                <div className="mt-auto pt-8 border-t border-zinc-900">
+                <div className="mt-auto pt-8 border-t border-zinc-900 hidden md:block">
                     <button
                         onClick={handleEnableNotifications}
                         className="w-full bg-zinc-900 border border-zinc-800 text-white px-4 py-4 rounded-2xl hover:border-orange-500 transition-all flex items-center justify-center gap-3 group"
@@ -121,17 +121,31 @@ export default function DashboardContent({ initialActiveTab, appointments, servi
             </aside>
 
             <main className="flex-1 md:pl-64 w-full min-h-screen flex flex-col overflow-x-hidden">
-                <header className="sticky top-0 z-40 w-full bg-black/80 backdrop-blur-xl border-b border-zinc-900/50 flex items-center justify-center md:justify-between p-6 md:px-10 h-24 flex-shrink-0">
-                    <h1 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter text-white text-center md:text-left">
-                        {activeTab === "agendamentos" && "Agenda"}
-                        {activeTab === "servicos" && "Serviços"}
-                        {activeTab === "produtos" && "Produtos"}
-                        {activeTab === "galeria" && "Galeria"}
-                        {activeTab === "contato" && "Contato"}
-                    </h1>
-                    <div className="hidden md:flex flex-col items-end">
-                        <p className="text-[10px] font-black uppercase text-orange-500 tracking-[0.3em]">Everaldo / Admin</p>
-                        <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{activeTab}</p>
+                <header className="sticky top-0 z-40 w-full bg-black/80 backdrop-blur-xl border-b border-zinc-900/50 flex items-center justify-between p-6 md:px-10 h-24 flex-shrink-0">
+                    <div className="flex flex-col">
+                        <h1 className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter text-white">
+                            {activeTab === "agendamentos" && "Agenda"}
+                            {activeTab === "servicos" && "Serviços"}
+                            {activeTab === "produtos" && "Produtos"}
+                            {activeTab === "galeria" && "Galeria"}
+                            {activeTab === "contato" && "Contato"}
+                        </h1>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        {/* BOTÃO PUSH NO TOPO (VISÍVEL NO MOBILE) */}
+                        <button
+                            onClick={handleEnableNotifications}
+                            className="md:hidden p-3 bg-zinc-900 border border-zinc-800 rounded-xl text-orange-500"
+                            title="Ativar Notificações"
+                        >
+                            <Bell size={20} />
+                        </button>
+
+                        <div className="hidden md:flex flex-col items-end">
+                            <p className="text-[10px] font-black uppercase text-orange-500 tracking-[0.3em]">Everaldo / Admin</p>
+                            <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{activeTab}</p>
+                        </div>
                     </div>
                 </header>
 
