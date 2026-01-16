@@ -6,6 +6,7 @@ import { ptBR } from "date-fns/locale";
 import { Clock, Scissors, Trash2, LayoutDashboard, Image as ImageIcon, ShoppingBag, Phone, Save, Plus, Upload, MapPin, Camera, Video, Bell, Instagram, Facebook } from "lucide-react";
 import OneSignal from "react-onesignal";
 import { handleAction } from "@/app/admin/actions";
+import { useRouter } from "next/navigation";
 
 interface DashboardContentProps {
     initialActiveTab: string;
@@ -17,6 +18,7 @@ interface DashboardContentProps {
 }
 
 export default function DashboardContent({ initialActiveTab, appointments, services, products, gallery, settings }: DashboardContentProps) {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState(initialActiveTab);
     const [loading, setLoading] = useState<string | null>(null);
 
@@ -28,9 +30,7 @@ export default function DashboardContent({ initialActiveTab, appointments, servi
         if (result && !result.success) {
             alert("Erro: " + result.error);
         } else {
-            if (intent?.toString().startsWith("create") || intent === "delete") {
-                // revalidatePath usually handles this
-            }
+            router.refresh();
         }
     };
 

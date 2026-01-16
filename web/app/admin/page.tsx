@@ -1,89 +1,69 @@
-'use client'
-
-import { useEffect, useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 import DashboardContent from "@/components/admin/DashboardContent";
 
-// Criamos um componente interno para lidar com a lógica que usa searchParams
-function AdminDashboard() {
-    const [loading, setLoading] = useState(true);
-    const [data, setData] = useState<any>({
-        appointments: [],
-        services: [],
-        products: [],
-        gallery: [],
-        settings: {}
-    });
-    
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const activeTab = searchParams.get("tab") || "agendamentos";
-    const supabase = createClient();
+export default async function AdminPage({
+    searchParams
+}: {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+    const supabase = await createClient();
+    const resolvedParams = await searchParams;
+    const activeTab = (resolvedParams.tab as string) || "agendamentos";
 
-    useEffect(() => {
-        async function loadAdminData() {
-            const { data: { user } } = await supabase.auth.getUser();
-            
-            if (!user || user.email !== "everaldocabeleireiro3@gmail.com") {
-                router.push("/");
-                return;
-            }
+    // 1. Get current user
+    const { data: { user } } = await supabase.auth.getUser();
 
-            const [
-                { data: appointments },
-                { data: services },
-                { data: products },
-                { data: galleryData },
-                { data: settingsData }
-            ] = await Promise.all([
-                supabase.from("appointments").select(`id, start_time, profiles(name, phone), services(name, price)`).order("start_time", { ascending: true }),
-                supabase.from("services").select("*").order("name"),
-                supabase.from("products").select("*").order("name"),
-                supabase.from("gallery").select("*").order("created_at", { ascending: false }),
-                supabase.from("settings").select("*")
-            ]);
-
-            const formattedSettings = settingsData?.reduce((acc: any, curr: any) => {
-                acc[curr.key] = curr.value;
-                return acc;
-            }, {}) || {};
-
-            setData({
-                appointments: appointments || [],
-                services: services || [],
-                products: products || [],
-                gallery: galleryData || [],
-                settings: formattedSettings
-            });
-            
-            setLoading(false);
-        }
-
-        loadAdminData();
-    }, [router, supabase]);
-
-    if (loading) {
-        return <div className="flex h-screen items-center justify-center">Carregando Painel...</div>;
+    if (!user) {
+        redirect("/login?next=/admin");
     }
+
+    // 2. Comprehensive Admin Check (Email + Role in Profiles)
+    const isHardcodedAdmin = user.email === "everaldocabeleireiro3@gmail.com";
+
+    const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+    const isAdmin = isHardcodedAdmin || profile?.role === "ADMIN";
+
+    if (!isAdmin) {
+        console.warn(`Unauthorized access attempt to admin by: ${user.email}`);
+        redirect("/");
+    }
+
+    // 3. Fetch all data on the server
+    const [
+        { data: appointments },
+        { data: services },
+        { data: products },
+        { data: galleryData },
+        { data: settingsData }
+    ] = await Promise.all([
+        supabase.from("appointments")
+            .select(`id, start_time, profiles(name, phone), services(name, price)`)
+            .order("start_time", { ascending: true }),
+        supabase.from("services").select("*").order("name"),
+        supabase.from("products").select("*").order("name"),
+        supabase.from("gallery").select("*").order("created_at", { ascending: false }),
+        supabase.from("settings").select("*")
+    ]);
+
+    const formattedSettings = settingsData?.reduce((acc: any, curr: any) => {
+        acc[curr.key] = curr.value;
+        return acc;
+    }, {}) || {};
 
     return (
         <DashboardContent
             initialActiveTab={activeTab}
-            appointments={data.appointments}
-            services={data.services}
-            products={data.products}
-            gallery={data.gallery}
-            settings={data.settings}
+            appointments={appointments || []}
+            services={services || []}
+            products={products || []}
+            gallery={galleryData || []}
+            settings={formattedSettings}
         />
-    );
-}
-
-// O componente principal exporta o dashboard dentro de um Suspense
-export default function AdminPage() {
-    return (
-        <Suspense fallback={<div className="flex h-screen items-center justify-center">Carregando...</div>}>
-            <AdminDashboard />
-        </Suspense>
     );
 }
