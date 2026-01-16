@@ -12,6 +12,14 @@ export default function LoginPage() {
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false)
     const [errorMsg, setErrorMsg] = useState("")
+    const [debugInfo, setDebugInfo] = useState({
+        url: process.env.NEXT_PUBLIC_SUPABASE_URL ? "OK" : "MISSING",
+        key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+            ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.substring(0, 5) + "..."
+            : process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
+                ? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY.substring(0, 5) + "..."
+                : "MISSING"
+    })
     const router = useRouter()
     const supabase = createClient()
 
@@ -97,6 +105,13 @@ export default function LoginPage() {
                         </Link>
                     </div>
                 </form>
+
+                {/* DEBUG BADGE */}
+                <div className="fixed bottom-4 left-4 p-2 bg-black/80 border border-white/20 rounded text-[10px] text-white/50 space-y-1 z-50 pointer-events-none">
+                    <div>URL: <span className={debugInfo.url === "OK" ? "text-green-500" : "text-red-500"}>{debugInfo.url}</span></div>
+                    <div>KEY: <span className={debugInfo.key === "MISSING" ? "text-red-500" : "text-green-500"}>{debugInfo.key}</span></div>
+                    <div className="opacity-30">v2.1-debug</div>
+                </div>
             </div>
         </div>
     )
