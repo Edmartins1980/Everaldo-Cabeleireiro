@@ -28,11 +28,11 @@ export default async function ServicesPage() {
                             key={service.id}
                             className="group flex flex-col justify-between p-4 rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
                         >
-                            <div className="flex justify-between items-start mb-2">
-                                <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
+                            <div className="flex items-start gap-3 mb-2">
+                                <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors flex-1">
                                     {service.name}
                                 </h3>
-                                <span className="font-bold text-primary">
+                                <span className="font-bold text-primary flex-shrink-0 whitespace-nowrap ml-auto">
                                     R$ {service.price.toFixed(2)}
                                 </span>
                             </div>
