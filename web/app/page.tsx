@@ -38,29 +38,31 @@ export default function Home() {
       </div>
 
       {/* CABEÇALHO */}
-      <header className="relative z-20 w-full p-6 flex justify-between items-center bg-transparent">
-        <h2 className="text-orange-500 font-black italic text-xl uppercase tracking-wider">HOME</h2>
-        <div className="flex items-center gap-4">
+      <header className="relative z-20 w-full p-4 md:p-6 flex justify-between items-center bg-transparent gap-2">
+        <h2 className="text-orange-500 font-black italic text-lg md:text-xl uppercase tracking-wider flex-shrink-0">HOME</h2>
+        <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-end">
           {user ? (
             <>
-              <span className="text-white text-sm font-medium">
+              <span className="text-white text-[10px] md:text-sm font-medium whitespace-nowrap">
                 Olá, <span className="text-orange-500 font-bold">{user.user_metadata?.full_name || user.email?.split("@")[0]}</span>
               </span>
-              <Link href="/appointments">
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
-                  <Calendar className="w-5 h-5" />
+              <div className="flex items-center gap-1 md:gap-2">
+                <Link href="/appointments">
+                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 w-8 h-8 md:w-10 md:h-10">
+                    <Calendar className="w-4 h-4 md:w-5 md:h-5" />
+                  </Button>
+                </Link>
+                <Button
+                  onClick={handleLogout}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold px-3 md:px-6 py-1 md:py-2 h-auto rounded-md flex gap-2 uppercase text-[10px] md:text-xs"
+                >
+                  <span className="hidden xs:inline">Sair</span> <LogOut className="w-3 h-3 md:w-4 md:h-4" />
                 </Button>
-              </Link>
-              <Button
-                onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 rounded-md flex gap-2 uppercase text-xs"
-              >
-                Sair <LogOut className="w-4 h-4" />
-              </Button>
+              </div>
             </>
           ) : (
             <Link href="/login">
-              <Button className="bg-orange-500 hover:bg-orange-600 text-black font-bold px-6 rounded-md uppercase text-xs">
+              <Button className="bg-orange-500 hover:bg-orange-600 text-black font-bold px-4 md:px-6 rounded-md uppercase text-[10px] md:text-xs">
                 Entrar
               </Button>
             </Link>
