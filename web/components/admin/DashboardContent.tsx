@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Clock, Scissors, Trash2, LayoutDashboard, Image as ImageIcon, ShoppingBag, Phone, Save, Plus, Upload, MapPin, Camera, Video, Bell, Instagram, Facebook } from "lucide-react";
-import OneSignal from "react-onesignal";
+import { Clock, Scissors, Trash2, LayoutDashboard, Image as ImageIcon, ShoppingBag, Phone, Save, Plus, Upload, MapPin, Camera, Video, Bell, Instagram, Facebook, AlertCircle } from "lucide-react";
 import { handleAction } from "@/app/admin/actions";
 import { useRouter } from "next/navigation";
 
@@ -24,9 +23,36 @@ export default function DashboardContent({ initialActiveTab, appointments, servi
 
     const onAction = async (formData: FormData) => {
         const intent = formData.get("intent");
+
+        // Validação de Upload da Galeria (Trava de 4MB)
+        if (intent === "upload_media") {
+            const file = formData.get("file") as File;
+            const type = formData.get("type") as string;
+
+            if (file && file.size > 0) {
+                // Limite de 4MB
+                const maxSize = 4 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    alert("ERRO: O arquivo é muito grande! O limite máximo é 4MB.\n\nVídeos longos ou fotos em altíssima resolução não são permitidos para manter a velocidade do site.");
+                    return;
+                }
+
+                // Validação Cruzada (Tipo selecionado vs Tipo do arquivo)
+                if (type === "PHOTO" && !file.type.startsWith("image/")) {
+                    alert("Erro: Você selecionou 'FOTO', mas enviou um arquivo que não é imagem.");
+                    return;
+                }
+                if (type === "VIDEO" && !file.type.startsWith("video/")) {
+                    alert("Erro: Você selecionou 'VÍDEO', mas enviou um arquivo que não é vídeo.");
+                    return;
+                }
+            }
+        }
+
         setLoading(intent as string);
         const result = await handleAction(formData);
         setLoading(null);
+
         if (result && !result.success) {
             alert("Erro: " + result.error);
         } else {
@@ -52,65 +78,6 @@ export default function DashboardContent({ initialActiveTab, appointments, servi
         formData.append("value", value);
         await onAction(formData);
     };
-
-    const handleEnableNotifications = async () => {
-        console.log("🔔 [OneSignal] Iniciando ativação de notificações...");
-
-        const os = (window as any).OneSignal;
-
-        if (!os) {
-            console.error("❌ [OneSignal] SDK não carregado");
-            alert("O SDK do OneSignal ainda não carregou. Aguarde alguns segundos e tente novamente.");
-            return;
-        }
-
-        console.log("✅ [OneSignal] SDK detectado");
-
-        try {
-            // Verificar estado atual de permissão
-            const permission = await os.Notifications.permission;
-            console.log("🔐 [OneSignal] Permissão atual:", permission);
-
-            if (permission === "denied") {
-                alert("⚠️ Você bloqueou as notificações anteriormente.\n\nPara ativar:\n1. Clique no ícone de cadeado na barra de endereço\n2. Mude 'Notificações' para 'Permitir'\n3. Recarregue a página");
-                return;
-            }
-
-            // Solicitar permissão
-            console.log("📱 [OneSignal] Solicitando permissão...");
-            await os.Notifications.requestPermission();
-
-            // Login e adicionar tag
-            const externalId = "admin-" + (settings.whatsapp || "owner").replace(/\D/g, "");
-            console.log("🔑 [OneSignal] Login com ID:", externalId);
-            await os.login(externalId);
-
-            console.log("🏷️ [OneSignal] Adicionando tag role=admin...");
-            await os.User.addTags({ role: "admin" });
-
-            console.log("✅ [OneSignal] Configuração completa!");
-            alert("✅ Notificações ativadas com sucesso!\n\nVocê receberá alertas de novos agendamentos.");
-
-        } catch (err: any) {
-            console.error("❌ [OneSignal] Erro detalhado:", err);
-            console.error("❌ [OneSignal] Stack:", err.stack);
-            console.error("❌ [OneSignal] Message:", err.message);
-
-            let errorMsg = "Erro ao ativar notificações.\n\n";
-
-            if (err.message?.includes("localhost") || err.message?.includes("Can only be used on")) {
-                errorMsg += "⚠️ PROBLEMA DE CONFIGURAÇÃO NO ONESIGNAL:\n\nVocê precisa adicionar a URL do site no OneSignal Dashboard:\n\n1. Acesse: onesignal.com\n2. Vá em Settings → Web Configuration\n3. Adicione a URL: https://everaldo-cabeleireiro.vercel.app\n4. Salve e tente novamente";
-            } else if (err.message?.includes("blocked")) {
-                errorMsg += "🚫 As notificações estão bloqueadas.\nDesative bloqueadores de anúncios e tente novamente.";
-            } else if (err.message?.includes("permission")) {
-                errorMsg += "⚠️ Permissão negada.\nVerifique as configurações do navegador.";
-            } else {
-                errorMsg += "Detalhes: " + err.message + "\n\nAbra o Console (F12) para mais informações.";
-            }
-
-            alert(errorMsg);
-        }
-    }
 
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-black text-white">
@@ -141,8 +108,6 @@ export default function DashboardContent({ initialActiveTab, appointments, servi
                         </button>
                     ))}
                 </nav>
-
-                {/* Botão Mobile Push removido a pedido do usuário */}
             </aside>
 
             <main className="flex-1 md:pl-64 w-full min-h-screen flex flex-col overflow-x-hidden">
@@ -158,8 +123,6 @@ export default function DashboardContent({ initialActiveTab, appointments, servi
                     </div>
 
                     <div className="flex items-center gap-3">
-                        {/* Botão Mobile Push removido - não será mais utilizado */}
-
                         <div className="hidden md:flex flex-col items-end">
                             <p className="text-[10px] font-black uppercase text-orange-500 tracking-[0.3em]">Everaldo / Admin</p>
                             <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{activeTab}</p>
@@ -306,22 +269,23 @@ export default function DashboardContent({ initialActiveTab, appointments, servi
                         <div className="space-y-8 max-w-4xl mx-auto">
                             <div className="bg-zinc-900/50 border border-zinc-800 p-8 rounded-3xl space-y-6">
                                 <form action={onAction} className="space-y-4">
-                                    <h3 className="font-bold uppercase text-orange-500 text-xs tracking-widest flex items-center gap-2"><Upload size={14} /> Carregar Novo Arquivo</h3>
-
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="font-bold uppercase text-orange-500 text-xs tracking-widest flex items-center gap-2"><Upload size={14} /> Carregar Novo Arquivo</h3>
+                                        <span className="text-[10px] font-bold text-zinc-500 flex items-center gap-1"><AlertCircle size={12} /> LIMITE: 4MB</span>
+                                    </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-bold uppercase text-zinc-500 tracking-widest">Tipo de Mídia</label>
-                                            <select name="type" className="w-full bg-black border border-zinc-800 p-3 rounded-xl outline-none focus:border-orange-500 appearance-none">
+                                            <select name="type" className="w-full bg-black border border-zinc-800 p-3 rounded-xl outline-none focus:border-orange-500 appearance-none cursor-pointer">
                                                 <option value="PHOTO">FOTO</option>
                                                 <option value="VIDEO">VÍDEO</option>
                                             </select>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-bold uppercase text-zinc-500 tracking-widest">Arquivo</label>
+                                            <label className="text-[10px] font-bold uppercase text-zinc-500 tracking-widest">Arquivo (Máx 4MB)</label>
                                             <input type="file" name="file" accept="image/*,video/*" className="w-full bg-black border border-zinc-800 p-2 rounded-xl outline-none focus:border-orange-500 file:bg-zinc-800 file:border-none file:text-white file:rounded-lg file:px-3 file:py-1 file:mr-4 file:text-xs file:font-bold hover:file:bg-orange-500 hover:file:text-black cursor-pointer" required />
                                         </div>
                                     </div>
-
                                     <input type="hidden" name="intent" value="upload_media" />
                                     <button disabled={loading === "upload_media"} className="w-full bg-orange-500 text-black font-black uppercase italic px-6 py-4 rounded-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-50">
                                         <Save size={18} /> {loading === "upload_media" ? "Enviando..." : "Subir para Galeria"}
@@ -353,11 +317,6 @@ export default function DashboardContent({ initialActiveTab, appointments, servi
                                         </div>
                                     </div>
                                 ))}
-                                {(!gallery || gallery.length === 0) && (
-                                    <div className="col-span-full py-20 text-center border border-dashed border-zinc-800 rounded-3xl">
-                                        <p className="text-zinc-500 font-bold uppercase text-xs tracking-widest">Sua galeria está vazia</p>
-                                    </div>
-                                )}
                             </div>
                         </div>
                     )}
@@ -399,7 +358,6 @@ export default function DashboardContent({ initialActiveTab, appointments, servi
                                     </div>
                                 </div>
 
-                                {/* CAMPOS DE REDES SOCIAIS ADICIONADOS AQUI */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-zinc-800/50">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest flex items-center gap-2"><Instagram size={14} /> Link do Instagram</label>
