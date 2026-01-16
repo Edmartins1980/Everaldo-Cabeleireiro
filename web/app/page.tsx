@@ -1,14 +1,30 @@
-"use client"
-
+import { useEffect, useState } from "react"
+import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Calendar, LogOut, Instagram, Facebook, MessageCircle } from "lucide-react"
+import { User } from "@supabase/supabase-js"
+import Link from "next/link"
 
 export default function Home() {
+  const [user, setUser] = useState<User | null>(null)
+  const supabase = createClient()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user)
+    })
+  }, [])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    window.location.href = "/login"
+  }
+
   return (
     <main className="relative h-screen w-full flex flex-col overflow-hidden bg-black">
-      
+
       {/* IMAGEM DE FUNDO */}
-      <div 
+      <div
         className="fixed inset-0 z-0"
         style={{
           backgroundImage: 'url("https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2074&auto=format&fit=crop")',
@@ -24,15 +40,30 @@ export default function Home() {
       <header className="relative z-20 w-full p-6 flex justify-between items-center bg-transparent">
         <h2 className="text-orange-500 font-black italic text-xl uppercase tracking-wider">HOME</h2>
         <div className="flex items-center gap-4">
-          <span className="text-white text-sm font-medium">
-            Olá, <span className="text-orange-500 font-bold">Ederson Martins</span>
-          </span>
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
-            <Calendar className="w-5 h-5" />
-          </Button>
-          <Button className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 rounded-md flex gap-2 uppercase text-xs">
-            Sair <LogOut className="w-4 h-4" />
-          </Button>
+          {user ? (
+            <>
+              <span className="text-white text-sm font-medium">
+                Olá, <span className="text-orange-500 font-bold">{user.user_metadata?.full_name || user.email?.split("@")[0]}</span>
+              </span>
+              <Link href="/appointments">
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+                  <Calendar className="w-5 h-5" />
+                </Button>
+              </Link>
+              <Button
+                onClick={handleLogout}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 rounded-md flex gap-2 uppercase text-xs"
+              >
+                Sair <LogOut className="w-4 h-4" />
+              </Button>
+            </>
+          ) : (
+            <Link href="/login">
+              <Button className="bg-orange-500 hover:bg-orange-600 text-black font-bold px-6 rounded-md uppercase text-xs">
+                Entrar
+              </Button>
+            </Link>
+          )}
         </div>
       </header>
 
@@ -54,35 +85,35 @@ export default function Home() {
         </div>
 
         <div className="w-full max-w-xs">
-          <a href="/book" className="w-full">
+          <Link href="/book" className="w-full">
             <Button size="lg" className="w-full h-20 bg-orange-500 hover:bg-orange-600 text-black font-black text-2xl rounded-xl shadow-2xl shadow-orange-500/20 uppercase transition-transform hover:scale-105 active:scale-95">
               AGENDAR HORÁRIO
             </Button>
-          </a>
+          </Link>
         </div>
       </div>
 
       {/* RODAPÉ - Z-50 PARA GARANTIR O CLIQUE */}
       <footer className="relative z-50 w-full p-8 flex justify-center items-center gap-8 bg-transparent">
-        <a 
-          href="https://www.instagram.com/everaldo.nascimento.35" 
-          target="_blank" 
+        <a
+          href="https://www.instagram.com/everaldo.nascimento.35"
+          target="_blank"
           rel="noopener noreferrer"
           className="text-white/70 hover:text-orange-500 transition-all transform hover:scale-110"
         >
           <Instagram size={32} />
         </a>
-        <a 
-          href="https://www.facebook.com/share/1FdtHeBTDP/" 
-          target="_blank" 
+        <a
+          href="https://www.facebook.com/share/1FdtHeBTDP/"
+          target="_blank"
           rel="noopener noreferrer"
           className="text-white/70 hover:text-orange-500 transition-all transform hover:scale-110"
         >
           <Facebook size={32} />
         </a>
-        <a 
-          href="https://wa.me/5511995130466" 
-          target="_blank" 
+        <a
+          href="https://wa.me/5511995130466"
+          target="_blank"
           rel="noopener noreferrer"
           className="text-white/70 hover:text-orange-500 transition-all transform hover:scale-110"
         >
