@@ -1,6 +1,7 @@
 [build]
-  command = "cd .. && npm install --prefix web && npm run build --prefix web"
-  publish = "web/.next"
+  base = "web"
+  command = "npm run build"
+  publish = ".next"
 
 [build.environment]
   NEXT_PUBLIC_SUPABASE_URL = "https://flridnddurlnkxmdfhym.supabase.co"
