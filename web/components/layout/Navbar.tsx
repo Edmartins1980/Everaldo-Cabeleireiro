@@ -63,11 +63,13 @@ export function Navbar() {
         <nav className="fixed top-0 left-0 right-0 border-b border-zinc-900 bg-black/80 backdrop-blur-md z-[100] w-full h-16">
             <div className="w-full h-full flex items-center justify-between px-4 md:px-8">
 
-                {/* Esquerda: Apenas o Link HOME limpo */}
+                {/* Esquerda: Nome do usuário */}
                 <div className="flex items-center">
-                    <Link href="/" className="font-bold text-xl tracking-tighter text-primary hover:text-white transition-all uppercase italic">
-                        HOME
-                    </Link>
+                    {user ? (
+                        <span className="text-sm font-bold text-muted-foreground">
+                            Olá, <span className="text-primary">{user.user_metadata?.full_name || user.email?.split("@")[0]}</span>
+                        </span>
+                    ) : null}
                 </div>
 
                 {/* Direita: Ações e Perfil */}
@@ -82,9 +84,6 @@ export function Navbar() {
 
                     {user ? (
                         <div className="flex items-center gap-4">
-                            <span className="hidden md:inline text-sm font-bold text-muted-foreground">
-                                Olá, <span className="text-primary">{user.user_metadata?.full_name || user.email?.split("@")[0]}</span>
-                            </span>
 
                             <Link href="/appointments">
                                 <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-primary" title="Meus Agendamentos">
