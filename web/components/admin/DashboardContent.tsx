@@ -54,25 +54,61 @@ export default function DashboardContent({ initialActiveTab, appointments, servi
     };
 
     const handleEnableNotifications = async () => {
+        console.log("🔔 [OneSignal] Iniciando ativação de notificações...");
+
         const os = (window as any).OneSignal;
-        if (os) {
-            os.push(async () => {
-                try {
-                    console.log("Chamando showNativePrompt...");
-                    await os.showNativePrompt();
 
-                    const externalId = "admin-" + (settings.whatsapp || "owner").replace(/\D/g, "");
-                    await os.login(externalId);
-                    await os.User.addTag("role", "admin");
+        if (!os) {
+            console.error("❌ [OneSignal] SDK não carregado");
+            alert("O SDK do OneSignal ainda não carregou. Aguarde alguns segundos e tente novamente.");
+            return;
+        }
 
-                    alert("Configuração concluída! Se o prompt apareceu, clique em permitir.");
-                } catch (err: any) {
-                    console.error("Erro ao ativar OneSignal:", err);
-                    alert("Erro ao ativar notificações. Verifique se o bloqueador de anúncios está desativado.");
-                }
-            });
-        } else {
-            alert("O SDK do OneSignal ainda não carregou. Tente em alguns segundos.");
+        console.log("✅ [OneSignal] SDK detectado");
+
+        try {
+            // Verificar estado atual de permissão
+            const permission = await os.Notifications.permission;
+            console.log("🔐 [OneSignal] Permissão atual:", permission);
+
+            if (permission === "denied") {
+                alert("⚠️ Você bloqueou as notificações anteriormente.\n\nPara ativar:\n1. Clique no ícone de cadeado na barra de endereço\n2. Mude 'Notificações' para 'Permitir'\n3. Recarregue a página");
+                return;
+            }
+
+            // Solicitar permissão
+            console.log("📱 [OneSignal] Solicitando permissão...");
+            await os.Notifications.requestPermission();
+
+            // Login e adicionar tag
+            const externalId = "admin-" + (settings.whatsapp || "owner").replace(/\D/g, "");
+            console.log("🔑 [OneSignal] Login com ID:", externalId);
+            await os.login(externalId);
+
+            console.log("🏷️ [OneSignal] Adicionando tag role=admin...");
+            await os.User.addTags({ role: "admin" });
+
+            console.log("✅ [OneSignal] Configuração completa!");
+            alert("✅ Notificações ativadas com sucesso!\n\nVocê receberá alertas de novos agendamentos.");
+
+        } catch (err: any) {
+            console.error("❌ [OneSignal] Erro detalhado:", err);
+            console.error("❌ [OneSignal] Stack:", err.stack);
+            console.error("❌ [OneSignal] Message:", err.message);
+
+            let errorMsg = "Erro ao ativar notificações.\n\n";
+
+            if (err.message?.includes("localhost") || err.message?.includes("Can only be used on")) {
+                errorMsg += "⚠️ PROBLEMA DE CONFIGURAÇÃO NO ONESIGNAL:\n\nVocê precisa adicionar a URL do site no OneSignal Dashboard:\n\n1. Acesse: onesignal.com\n2. Vá em Settings → Web Configuration\n3. Adicione a URL: https://everaldo-cabeleireiro.vercel.app\n4. Salve e tente novamente";
+            } else if (err.message?.includes("blocked")) {
+                errorMsg += "🚫 As notificações estão bloqueadas.\nDesative bloqueadores de anúncios e tente novamente.";
+            } else if (err.message?.includes("permission")) {
+                errorMsg += "⚠️ Permissão negada.\nVerifique as configurações do navegador.";
+            } else {
+                errorMsg += "Detalhes: " + err.message + "\n\nAbra o Console (F12) para mais informações.";
+            }
+
+            alert(errorMsg);
         }
     }
 
@@ -106,18 +142,7 @@ export default function DashboardContent({ initialActiveTab, appointments, servi
                     ))}
                 </nav>
 
-                <div className="mt-auto pt-8 border-t border-zinc-900 hidden md:block">
-                    <button
-                        onClick={handleEnableNotifications}
-                        className="w-full bg-zinc-900 border border-zinc-800 text-white px-4 py-4 rounded-2xl hover:border-orange-500 transition-all flex items-center justify-center gap-3 group"
-                    >
-                        <Bell size={18} className="text-orange-500 group-hover:scale-110 transition-transform" />
-                        <div className="text-left">
-                            <p className="text-[10px] font-black uppercase text-orange-500">Mobile Push</p>
-                            <p className="text-[9px] font-bold text-zinc-500">Ativar Alertas</p>
-                        </div>
-                    </button>
-                </div>
+                {/* Botão Mobile Push removido a pedido do usuário */}
             </aside>
 
             <main className="flex-1 md:pl-64 w-full min-h-screen flex flex-col overflow-x-hidden">
@@ -133,14 +158,7 @@ export default function DashboardContent({ initialActiveTab, appointments, servi
                     </div>
 
                     <div className="flex items-center gap-3">
-                        {/* BOTÃO PUSH NO TOPO (VISÍVEL NO MOBILE) */}
-                        <button
-                            onClick={handleEnableNotifications}
-                            className="md:hidden p-3 bg-zinc-900 border border-zinc-800 rounded-xl text-orange-500"
-                            title="Ativar Notificações"
-                        >
-                            <Bell size={20} />
-                        </button>
+                        {/* Botão Mobile Push removido - não será mais utilizado */}
 
                         <div className="hidden md:flex flex-col items-end">
                             <p className="text-[10px] font-black uppercase text-orange-500 tracking-[0.3em]">Everaldo / Admin</p>

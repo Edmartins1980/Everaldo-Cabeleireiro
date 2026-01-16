@@ -5,9 +5,13 @@ import OneSignal from "react-onesignal"
 
 export default function OneSignalInit() {
     useEffect(() => {
+        console.log("🚀 [OneSignal] Iniciando carregamento...");
+
         const timer = setTimeout(async () => {
             if (typeof window !== "undefined") {
                 try {
+                    console.log("⚙️ [OneSignal] Configurando SDK...");
+
                     await OneSignal.init({
                         appId: "b990cc83-c3e9-489c-8572-91788099673b",
                         allowLocalhostAsSecureOrigin: true,
@@ -31,11 +35,14 @@ export default function OneSignalInit() {
                                 'dialog.blocked.message': 'Permita nas configurações'
                             }
                         }
-                    }).then(() => {
-                        console.log("OneSignal inicializado com delay e Localhost ativo!");
                     });
-                } catch (err) {
-                    console.error("Erro OneSignal Init:", err);
+
+                    console.log("✅ [OneSignal] SDK inicializado com sucesso!");
+                    console.log("🔧 [OneSignal] Localhost permitido:", true);
+
+                } catch (err: any) {
+                    console.error("❌ [OneSignal] Erro na inicialização:", err);
+                    console.error("❌ [OneSignal] Detalhes:", err.message);
                 }
             }
         }, 500);
